@@ -1,0 +1,13 @@
+#SPDX-License-Identifier: MIT-0
+---
+# defaults file for tomcat-ansible-docker
+
+jfrog_url: "http://localhost/artifactory/libs-release-local/myapp.war"
+jfrog_username: "your_username"
+jfrog_password: "your_password"
+war_file_name: "myapp.war"
+
+docker_image_name: "custom-tomcat"
+docker_container_name: "custom-tomcat-container"
+app_port: 5055
+

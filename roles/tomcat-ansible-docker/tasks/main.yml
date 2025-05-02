@@ -1,0 +1,37 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for tomcat-ansible-docker
+- name: Download WAR from JFrog
+  get_url:
+    url: "{{ jfrog_url }}"
+    dest: "/tmp/{{ war_file_name }}"
+    url_username: "{{ jfrog_username }}"
+    url_password: "{{ jfrog_password }}"
+    force_basic_auth: yes
+
+- name: Template Dockerfile
+  template:
+    src: Dockerfile.j2
+    dest: /tmp/Dockerfile
+
+- name: Copy WAR to build context
+  copy:
+    src: "/tmp/{{ war_file_name }}"
+    dest: "/tmp/{{ war_file_name }}"
+    remote_src: yes
+
+- name: Build Docker image
+  community.docker.docker_image:
+    name: "{{ docker_image_name }}"
+    build:
+      path: /tmp
+
+- name: Run Docker container
+  community.docker.docker_container:
+    name: "{{ docker_container_name }}"
+    image: "{{ docker_image_name }}"
+    state: started
+    restart_policy: unless-stopped
+    published_ports:
+      - "{{ app_port }}:8080"
+

@@ -1,0 +1,75 @@
+- name: Deploy custom Tomcat with WAR
+  hosts: localhost
+  become: false
+  vars:
+    war_url: "http://localhost:5040/artifactory/libs-snapshot-local/devops/ilp1/ILP/0.0.1-SNAPSHOT/*.war"
+    war_name: "Fancystore.war"
+    docker_image_name: "custom-tomcat"
+    container_name: "tomcat-app"
+    ansible_python_interpreter: /usr/bin/python3
+
+  tasks:
+
+    - name: Create files directory
+      file:
+        path: "./files"
+        state: directory
+
+    - name: Create files directory
+      file:
+        path: "./temp"
+        state: directory
+
+    - name: Find the latest war file from all downloaded
+      shell: rm -f ./files/* && rm -f ./temp/*
+
+
+          # - name: Download WAR file
+          #get_url:
+          #url: "{{ war_url }}"
+          #dest: "./files/"
+        
+    - name: Find the latest war file from all downloaded
+      shell: cd ./temp/ && wget -r -l1 -nd -A "*.war" http://localhost:5040/artifactory/libs-snapshot-local/devops/ilp1/ILP/0.0.1-SNAPSHOT
+
+    - name: Find the latest war file from all downloaded
+      shell: ls ./temp/*.war | tail -1 | xargs cp -t ./files/
+
+
+    - name: Copy files to files fodler
+      shell: cp ./files/*.war ./files/{{ war_name }} && rm -f ./files/ILP*.war && rm -rf ./temp/ 
+
+
+    - name: Check if the container exists
+      community.docker.docker_container_info:
+        name: "{{ container_name }}"
+      register: container_info
+      ignore_errors: true
+
+    - name: Stop and remove the container if it exists
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        state: absent
+      when: container_info is defined and container_info.container is defined
+
+    - name: Remove the Docker image
+      community.docker.docker_image:
+        name: "{{ docker_image_name }}"
+        state: absent
+      when: container_info is defined and container_info.container is defined
+        
+    - name: Build Docker image
+      community.docker.docker_image:
+        name: "{{ docker_image_name }}"
+        build:
+          path: "."
+        source: build
+
+    - name: Run Tomcat container
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        image: "{{ docker_image_name }}"
+        state: started
+        published_ports:
+          - "5055:8080"
+
