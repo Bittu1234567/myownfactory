@@ -22,6 +22,10 @@ build_app:
   script:
     - echo "Compiling Java application..."
     - mvn clean package -DskipTests
+  artifacts:
+    paths:
+      - target/
+
 
 # Step 2: Build Docker image
 build_image:
