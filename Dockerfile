@@ -4,5 +4,5 @@ FROM tomcat:9.0
 RUN rm -rf /usr/local/tomcat/webapps/*
 
 # Copy custom WAR
-COPY ./target/ILP_Fancystore.war /usr/local/tomcat/webapps/ILP_Fancystore.war
+COPY target/ILP_Fancystore.war /usr/local/tomcat/webapps/ILP_Fancystore.war
 
