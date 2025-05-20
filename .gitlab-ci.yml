@@ -1,0 +1,46 @@
+stages:
+  - build
+  - dockerize
+  - push
+
+variables:
+  IMAGE_NAME: $CI_PROJECT_NAME
+  DOCKER_IMAGE_TAG: $ECR_REPO_URI:$CI_COMMIT_SHORT_SHA
+
+default:
+  tags:
+    - cicdpoc  # Your GitLab shell runner tag
+  before_script:
+    - echo "Logging in to AWS ECR..."
+    - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO_URI
+
+# Step 1: Compile Java app
+build_app:
+  stage: build
+  only:
+    - feature-poc
+  script:
+    - echo "Compiling Java application..."
+    - mvn clean package -DskipTests
+
+# Step 2: Build Docker image
+build_image:
+  stage: dockerize
+  only:
+    - feature-poc
+  script:
+    - echo "Building Docker image..."
+    - docker build -t $IMAGE_NAME .
+    - docker tag $IMAGE_NAME $DOCKER_IMAGE_TAG
+    - docker tag $IMAGE_NAME $ECR_REPO_URI:latest
+
+# Step 3: Push to ECR
+push_image:
+  stage: push
+  only:
+    - feature-poc
+  script:
+    - echo "Pushing Docker image to AWS ECR..."
+    - docker push $DOCKER_IMAGE_TAG
+    - docker push $ECR_REPO_URI:latest
+
