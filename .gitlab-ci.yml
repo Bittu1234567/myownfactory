@@ -56,4 +56,4 @@ run:
     - docker run -d --name tomcat -p 8080:8080 $ECR_REPO_URI:latest
     - sleep 5  # wait for app to boot up (optional)
     - docker logs tomcat
-    - curl -f http://localhost:8080 || (echo "Container failed to respond" && exit 1)
+    - curl -f http://localhost:8080/ILP_Fancystore/ || (echo "Container failed to respond" && exit 1)
