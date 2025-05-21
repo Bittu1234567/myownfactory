@@ -2,6 +2,7 @@ stages:
   - build
   - dockerize
   - push
+  - run
 
 variables:
   IMAGE_NAME: $CI_PROJECT_NAME
@@ -48,3 +49,11 @@ push_image:
     - docker push $DOCKER_IMAGE_TAG
     - docker push $ECR_REPO_URI:latest
 
+run:
+  stage: run
+  script:
+    - docker rm -f tomcat
+    - docker run -d --name tomcat -p 8080:8080 $ECR_REPO_URI:latest
+    - sleep 5  # wait for app to boot up (optional)
+    - docker logs tomcat
+    - curl -f http://localhost:8080 || (echo "Container failed to respond" && exit 1)
