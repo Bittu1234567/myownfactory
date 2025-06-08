@@ -11,11 +11,19 @@ pipeline {
                sh "/usr/bin/mvn test -DskipTests"
              }
          } 
-        stage('Deploy') {
+        stage('Package') {
             steps {
                sh "/usr/bin/mvn package"
             }
          }
+
+
+        stage('Deploy') {
+            steps {
+               sh "cd tomcat-playbook && ansible-playbook -i inventory playbook_new.yml "
+            }
+         }
+
      }
 }
 
